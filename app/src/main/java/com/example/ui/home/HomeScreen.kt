@@ -69,6 +69,15 @@ fun HomeScreen(navController: NavController, viewModel: DhabaViewModel) {
                 ) {}
             }
         },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = { navController.navigate("chat") },
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+            ) {
+                Icon(Icons.Default.AutoAwesome, contentDescription = "AI Assistant")
+            }
+        },
         bottomBar = {
             if (cart.isNotEmpty()) {
                 Box(

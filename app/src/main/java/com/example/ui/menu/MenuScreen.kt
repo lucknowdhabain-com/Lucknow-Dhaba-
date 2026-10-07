@@ -42,7 +42,7 @@ fun MenuScreen(navController: NavController, viewModel: DhabaViewModel) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Our Menu") },
+                title = { Text("Authentic Lucknowi Menu") },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
@@ -69,10 +69,27 @@ fun MenuScreen(navController: NavController, viewModel: DhabaViewModel) {
                 )
             }
 
-            LazyColumn(modifier = Modifier.fillMaxSize()) {
-                items(filteredItems) { item ->
-                    MenuItemRow(item) {
-                        viewModel.addToCart(item, 1, emptyList())
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(bottom = 16.dp)
+            ) {
+                if (selectedCategory == "All") {
+                    val grouped = filteredItems.groupBy { it.category }
+                    grouped.forEach { (category, items) ->
+                        item {
+                            CategoryHeader(category)
+                        }
+                        items(items) { item ->
+                            MenuItemRow(item) {
+                                viewModel.addToCart(item, 1, emptyList())
+                            }
+                        }
+                    }
+                } else {
+                    items(filteredItems) { item ->
+                        MenuItemRow(item) {
+                            viewModel.addToCart(item, 1, emptyList())
+                        }
                     }
                 }
             }
@@ -81,8 +98,22 @@ fun MenuScreen(navController: NavController, viewModel: DhabaViewModel) {
 }
 
 @Composable
+fun CategoryHeader(category: String) {
+    Text(
+        text = category,
+        style = MaterialTheme.typography.titleMedium,
+        fontWeight = FontWeight.ExtraBold,
+        color = MaterialTheme.colorScheme.primary,
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+    )
+}
+
+@Composable
 fun CategoryFilters(selected: String, onSelect: (String) -> Unit) {
-    val categories = listOf("All", "Starters", "Main Course", "Drinks", "Desserts")
+    val categories = listOf("All", "Kebabs", "Biryanis", "Breads", "Curries", "Desserts")
     LazyRow(
         modifier = Modifier.fillMaxWidth(),
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),

@@ -19,6 +19,7 @@ import com.example.ui.auth.AuthScreen
 import com.example.ui.home.HomeScreen
 import com.example.ui.menu.MenuScreen
 import com.example.ui.cart.CartScreen
+import com.example.ui.chat.ChatScreen
 import com.example.ui.order.OrderTrackingScreen
 import com.example.ui.theme.LucknowDhabaTheme
 import com.google.firebase.Firebase
@@ -74,6 +75,9 @@ fun AppContent() {
                     navController = navController, 
                     viewModel = viewModel
                 ) 
+            }
+            composable("chat") {
+                ChatScreen(navController = navController)
             }
             composable("order_tracking/{orderId}") { backStackEntry ->
                 val orderId = backStackEntry.arguments?.getString("orderId") ?: ""

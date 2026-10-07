@@ -6,6 +6,7 @@ plugins {
   alias(libs.plugins.google.devtools.ksp)
   alias(libs.plugins.secrets)
   alias(libs.plugins.google.services)
+  id("org.jetbrains.kotlin.plugin.serialization") version "2.2.10"
 }
 
 android {
@@ -13,7 +14,7 @@ android {
   compileSdk { version = release(36) { minorApiLevel = 1 } }
 
   defaultConfig {
-    applicationId = "com.lucknowdhaba.ordering"
+    applicationId = "com.lucknowdhabain.lucknowdhaba"
     minSdk = 24
     targetSdk = 36
     versionCode = 1
@@ -118,6 +119,8 @@ dependencies {
   implementation(libs.okhttp)
   // implementation(libs.play.services.location)
   implementation(libs.retrofit)
+  implementation("com.squareup.retrofit2:converter-kotlinx-serialization:2.11.0")
+  implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
   testImplementation(libs.androidx.compose.ui.test.junit4)
   testImplementation(libs.androidx.core)
   testImplementation(libs.androidx.junit)

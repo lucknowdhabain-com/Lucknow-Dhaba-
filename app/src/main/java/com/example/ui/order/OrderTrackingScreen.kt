@@ -4,6 +4,8 @@ import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -22,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.lerp
 import androidx.navigation.NavController
+import com.example.R
 import com.example.data.models.Order
 import com.example.ui.DhabaViewModel
 
@@ -29,15 +32,25 @@ import com.example.ui.DhabaViewModel
 @Composable
 fun OrderTrackingScreen(orderId: String, navController: NavController, viewModel: DhabaViewModel) {
     val orders by viewModel.orders.collectAsState()
-    val order = orders.find { it.id == orderId } ?: orders.firstOrNull() // Fallback for demo
+    val order = orders.find { it.id == orderId } ?: orders.lastOrNull() 
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Order Tracking") },
+                title = { 
+                    Column {
+                        Text("Tracking Order", style = MaterialTheme.typography.titleMedium)
+                        Text(order?.status ?: "Updating...", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
+                    }
+                },
                 navigationIcon = {
                     IconButton(onClick = { navController.navigate("home") { popUpTo("home") { inclusive = true } } }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                    }
+                },
+                actions = {
+                    IconButton(onClick = { /* Help */ }) {
+                        Icon(Icons.Default.HelpOutline, contentDescription = "Help")
                     }
                 }
             )
@@ -48,76 +61,122 @@ fun OrderTrackingScreen(orderId: String, navController: NavController, viewModel
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(300.dp)
-                    .background(Color(0xFFE0E0E0)),
+                    .height(350.dp)
+                    .background(Color(0xFFF5F5F5)),
                 contentAlignment = Alignment.Center
             ) {
-                SimulatedMapContent()
+                SimulatedMapContent(order?.status ?: "Accepted")
                 
-                Card(
-                    modifier = Modifier.align(Alignment.TopCenter).padding(16.dp),
-                    shape = RoundedCornerShape(8.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.Black.copy(alpha = 0.7f))
+                Surface(
+                    modifier = Modifier.align(Alignment.BottomCenter).padding(24.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    color = MaterialTheme.colorScheme.surface,
+                    tonalElevation = 4.dp,
+                    shadowElevation = 8.dp
                 ) {
-                    Text(
-                        "Arriving in 15 mins",
-                        color = Color.White,
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                        style = MaterialTheme.typography.labelMedium
-                    )
+                    Row(
+                        modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(Icons.Default.Moped, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column {
+                            Text(
+                                if (order?.status == "Delivered") "Order Delivered!" else "Arriving in 12-15 mins",
+                                style = MaterialTheme.typography.labelLarge,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text("Your delivery partner is on the way", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+                        }
+                    }
                 }
             }
 
-            // Order Status
-            OrderSummaryCard(order)
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            StatusTracker(order?.status ?: "Preparing")
-
-            Spacer(modifier = Modifier.weight(1f))
-
-            // Delivery Boy Info & PIN
-            DeliveryBoyCard(order?.deliveryPin ?: "----")
+            LazyColumn(modifier = Modifier.fillMaxSize()) {
+                item {
+                    OrderSummaryCard(order)
+                }
+                item {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    StatusTracker(order?.status ?: "Accepted")
+                }
+                item {
+                    Spacer(modifier = Modifier.height(24.dp))
+                    DeliveryBoyCard(order?.deliveryPin ?: "----")
+                }
+            }
         }
     }
 }
 
 @Composable
-fun SimulatedMapContent() {
+fun SimulatedMapContent(status: String) {
+    val isOutForDelivery = status == "Out for Delivery" || status == "Delivered"
+    
     val infiniteTransition = rememberInfiniteTransition(label = "map")
     val dotOffset by infiniteTransition.animateFloat(
         initialValue = 0f,
         targetValue = 1f,
         animationSpec = infiniteRepeatable(
-            animation = tween(4000, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
+            animation = tween(8000, easing = LinearEasing),
+            repeatMode = if (status == "Delivered") RepeatMode.Restart else RepeatMode.Restart
         ),
         label = "dot"
     )
 
     Canvas(modifier = Modifier.fillMaxSize()) {
-        val start = Offset(size.width * 0.2f, size.height * 0.8f)
-        val end = Offset(size.width * 0.8f, size.height * 0.2f)
+        val start = Offset(size.width * 0.15f, size.height * 0.85f)
+        val mid = Offset(size.width * 0.5f, size.height * 0.5f)
+        val end = Offset(size.width * 0.85f, size.height * 0.15f)
         
-        // Path
+        // Draw some grid lines/roads
+        val roadColor = Color.LightGray.copy(alpha = 0.5f)
+        for (i in 0..10) {
+            drawLine(roadColor, Offset(0f, i * size.height / 10), Offset(size.width, i * size.height / 10), 1.dp.toPx())
+            drawLine(roadColor, Offset(i * size.width / 10, 0f), Offset(i * size.width / 10, size.height), 1.dp.toPx())
+        }
+
+        // Delivery Route
         drawLine(
-            color = Color.Gray,
+            color = Color.Gray.copy(alpha = 0.3f),
             start = start,
             end = end,
-            strokeWidth = 4.dp.toPx(),
-            pathEffect = PathEffect.dashPathEffect(floatArrayOf(20f, 10f), 0f)
+            strokeWidth = 6.dp.toPx(),
+            pathEffect = PathEffect.dashPathEffect(floatArrayOf(30f, 20f), 0f)
         )
 
-        // User Location
-        drawCircle(color = Color.Red, radius = 8.dp.toPx(), center = end)
+        // Home Location
+        drawCircle(color = Color(0xFFE53935), radius = 10.dp.toPx(), center = end)
+        drawCircle(color = Color.White, radius = 4.dp.toPx(), center = end)
         
-        // Delivery Boy
-        val currentPos = Offset(
-            lerp(start.x, end.x, dotOffset),
-            lerp(start.y, end.y, dotOffset)
-        )
-        drawCircle(color = Color(0xFF4CAF50), radius = 10.dp.toPx(), center = currentPos)
+        // Dhaba Location
+        drawCircle(color = Color(0xFF43A047), radius = 10.dp.toPx(), center = start)
+        
+        // Delivery Boy Movement
+        if (isOutForDelivery) {
+            val progress = if (status == "Delivered") 1f else dotOffset
+            val currentPos = Offset(
+                lerp(start.x, end.x, progress),
+                lerp(start.y, end.y, progress)
+            )
+            
+            // Draw a "radar" ring
+            drawCircle(
+                color = Color(0xFF2196F3).copy(alpha = 0.2f),
+                radius = 25.dp.toPx() * (1f + dotOffset % 0.5f),
+                center = currentPos
+            )
+            
+            drawCircle(color = Color(0xFF2196F3), radius = 12.dp.toPx(), center = currentPos)
+            drawCircle(color = Color.White, radius = 5.dp.toPx(), center = currentPos)
+        } else {
+            // Restaurant pulse when preparing
+            drawCircle(
+                color = Color(0xFF43A047).copy(alpha = 0.3f),
+                radius = 20.dp.toPx() * (1f + dotOffset % 0.4f),
+                center = start
+            )
+        }
     }
 }
 

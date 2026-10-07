@@ -74,4 +74,11 @@ class DhabaRepository(context: Context) {
         val uid = auth.currentUser?.uid ?: return null
         return db.collection("users").document(uid).get().await().toObject(UserProfile::class.java)
     }
+
+    suspend fun updateOrderStatus(orderId: String, status: String) {
+        db.collection("orders").document(orderId).update(
+            "status", status,
+            "updatedAt", FieldValue.serverTimestamp()
+        ).await()
+    }
 }
