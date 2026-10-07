@@ -1,0 +1,51 @@
+{
+  "collections": {
+    "menu": {
+      "document": {
+        "name": "string",
+        "description": "string",
+        "price": "number",
+        "category": "string",
+        "imageUrl": "string",
+        "rating": "number",
+        "isVeg": "boolean",
+        "customizations": "array"
+      },
+      "allow": {
+        "read": "true",
+        "write": "false"
+      }
+    },
+    "users": {
+      "document": {
+        "name": "string",
+        "email": "string",
+        "phone": "string",
+        "addresses": "array"
+      },
+      "allow": {
+        "read": "request.auth.uid == userId",
+        "write": "request.auth.uid == userId"
+      }
+    },
+    "orders": {
+      "document": {
+        "userId": "string",
+        "items": "array",
+        "totalBill": "number",
+        "tax": "number",
+        "deliveryFee": "number",
+        "status": "string",
+        "deliveryPin": "string",
+        "deliveryAddress": "object",
+        "paymentMethod": "string",
+        "createdAt": "timestamp",
+        "updatedAt": "timestamp"
+      },
+      "allow": {
+        "read": "request.auth.uid == resource.data.userId",
+        "write": "request.auth != null && request.resource.data.userId == request.auth.uid"
+      }
+    }
+  }
+}

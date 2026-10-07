@@ -1,0 +1,6 @@
+{
+  "name": "Lucknow Dhaba",
+  "description": "Premium dhaba experience with live tracking, safety features, and authentic Lucknowi flavors.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
